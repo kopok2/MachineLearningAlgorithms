@@ -1,3 +1,4 @@
+# coding=utf-8
 """Python implementation of k-nearest neighbors classifier.
 
 Data consists of feature vectors and class.
