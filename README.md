@@ -1,2 +1,2 @@
 # Machine Learning Algorithms
- Python implementations of various machine learning algorithms.
+ Machine learning algorithms Python implementations.
