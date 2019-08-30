@@ -1,8 +1,9 @@
 # coding=utf-8
-"""LARS.
+"""LARS Lasso regression.
 
-Least Angle Regression - high dimensional data regression.
+Least angle regression least absolute shrinkage and selection operator.
 """
+
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -24,13 +25,13 @@ if __name__ == "__main__":
     y_train, y_test = y[:n_samples // 2], y[n_samples // 2:]
 
     print("Fitting model...")
-    lars = linear_model.Lars()
-    lars.fit(X_train, y_train)
-    print(lars)
-    print("R2 score: {0}".format(r2_score(y_test, lars.predict(X_test))))
+    larslasso = linear_model.LassoLars(alpha=0.1)
+    larslasso.fit(X_train, y_train)
+    print(larslasso)
+    print("R2 score: {0}".format(r2_score(y_test, larslasso.predict(X_test))))
 
     print("Plotting predictions...")
     plt.scatter(idd[:n_samples // 2], y_train, color="red")
     plt.scatter(idd[n_samples // 2:], y_test, color="fuchsia")
-    plt.plot(idd, lars.predict(X), color="purple")
+    plt.plot(idd, larslasso.predict(X), color="purple")
     plt.show()
