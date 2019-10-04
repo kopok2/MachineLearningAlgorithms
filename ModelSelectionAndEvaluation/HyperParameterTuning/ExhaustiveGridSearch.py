@@ -15,7 +15,7 @@ if __name__ == '__main__':
     gs = GridSearchCV(SVC(),
                       [{'kernel': ['rbf'], 'gamma': np.logspace(0.01, 0.00001, 10), 'C': np.logspace(1, 1000, 10)},
                        {'kernel': ['linear'], 'C': np.logspace(1, 1000, 10)},
-                       {'kernel': ['poly'], 'C': np.logspace(1, 1000, 10), 'degree': np.linspace(1, 100, 100)}],
+                       {'kernel': ['poly'], 'C': np.logspace(1, 1000, 10), 'degree': np.linspace(1, 100, 10)}],
                       cv=5, scoring="accuracy")
     gs.fit(X_train, y_train)
     print(gs.cv_results_["mean_test_score"])
