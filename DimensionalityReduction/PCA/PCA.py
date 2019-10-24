@@ -62,9 +62,7 @@ def PCA(X, num_components):
     S = projection_matrix(X) / len(X)
     lam, eig_v = eig(S)
     s_ids = np.argsort(-lam)
-    lam = lam[s_ids]
     eig_v = eig_v[:, s_ids]
     B = eig_v[:, :num_components]
     P = projection_matrix(B)
-    # your solution should take advantage of the functions you have implemented above.
-    return P @ X  # <-- EDIT THIS to return the reconstruction of X
+    return P @ X
