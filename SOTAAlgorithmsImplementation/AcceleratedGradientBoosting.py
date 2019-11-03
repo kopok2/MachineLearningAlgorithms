@@ -16,7 +16,12 @@ It is empirically shown that AGBis much less sensitive to the shrinkage paramete
 and outputs predictors that are considerably more sparse in the number of trees,
 while retaining the exceptional performance of gradient boosting.
 """
+import sys
+import math
+import operator
 from operator import itemgetter
+
+#sys.setrecursionlimit(100000)
 
 
 class DecisionNode:
@@ -87,7 +92,13 @@ class WeakRegressionTree:
         Returns:
             list of regression predictions for x.
         """
-        result = list(map(self.root.decide, x))
+        try:
+            if len(x[0]):
+                result = list(map(self.root.decide, x))
+            else:
+                result = self.root.decide(x)
+        except TypeError:
+            result = self.root.decide(x)
         return result
 
 
@@ -108,14 +119,56 @@ class LeafNode:
         return self.decision
 
 
+def f_factory(epoch, shrinkage, learner, g):
+    """Generate f inplace function."""
+    return lambda vec: g[epoch](vec) + shrinkage * learner.predict(vec)
+
+
+def g_factory(epoch, gamma_param, f):
+    """Generate g inplace function."""
+    return lambda vec: (1 - gamma_param) * f[epoch + 1](vec) + gamma_param * f[epoch](vec)
+
+
 class AGBRegressor:
     """Accelerated Gradient Boosting regressor."""
-    ...
+    def __init__(self):
+        self.predict = lambda: 0
+
+    def fit(self, x, y, shrinkage=0.9, epochs=20):
+        """Fit additive model to given data.
+
+        Args:
+            x (list of lists): data.
+            y (list): target values.
+            shrinkage (double): learning bound.
+            epochs (int): learning iterations.
+        """
+        lambda_param = [0]
+        gamma_param = 0
+        start_function = sum(y) / len(y)
+        g = [lambda vec: start_function]
+        f = [lambda vec: start_function]
+        tested_feature = 0
+        for epoch in range(epochs):
+            print("Training on epoch {0}".format(epoch))
+            print(epoch, f, g)
+            z = list(map(lambda a: operator.sub(*a), zip(y, map(g[-1], x))))
+            learner = WeakRegressionTree()
+            learner.fit(x, z, tested_feature)
+            f.append(f_factory(epoch, shrinkage, learner, g))
+            print(f, epoch, epoch + 1)
+            g.append(g_factory(epoch, gamma_param, f))
+            lambda_param.append((1 + math.sqrt(1 + 4 * (lambda_param[-1] ** 2))) / 2)
+            gamma_param = (1 - lambda_param[-2]) / lambda_param[-1]
+            tested_feature += 1
+            if tested_feature >= len(x[0]):
+                tested_feature = 0
+        self.predict = f[-1]
 
 
 if __name__ == '__main__':
     x = [[0, 0, 0], [1, 1, 1], [2, 2, 2], [3, 3, 3]]
     y = [1, 2, 3, 4]
-    rt = WeakRegressionTree()
-    rt.fit(x, y, 0)
-    print(rt.predict(x))
+    agb = AGBRegressor()
+    agb.fit(x, y, epochs=30)
+    print(list(map(agb.predict, x)), y)
